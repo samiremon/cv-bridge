@@ -77,9 +77,33 @@ docker compose up --build
 ```
 
 - **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Interactive Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc Alternative UI**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
 ---
+
+## 🧪 Swagger API Testing
+
+The backend is fully configured for interactive API testing via Swagger UI at `http://localhost:8000/docs` with pre-filled examples, schema definitions, response models, and execution duration tracking.
+
+### Recommended Testing Sequence:
+
+1. **`GET /api/health`**
+   - Verify server and LangGraph orchestrator status and confirm `api_key_configured: true`.
+2. **`POST /api/tailor/analyze`**
+   - Upload sample resume from `backend/test_data/sample_resume.txt` (or any `.pdf`/`.docx`).
+   - Paste job description from `backend/test_data/sample_job_description.txt`.
+   - Copy the returned `session_id` and review `clarification_questions`.
+3. **`POST /api/tailor/verify-clarification`** or **`POST /api/tailor/batch-clarifications`**
+   - Submit candidate answers (e.g., `Add in skills, Add in experience` or `Don't add`).
+4. **`POST /api/tailor/generate`**
+   - Trigger the ATS Rewriter Agent to compile the tailored resume grounded in verified claims.
+5. **`GET /api/tailor/preview-pdf?session_id=...`**
+   - View the generated ATS-friendly PDF with verified additions highlighted in green.
+6. **`GET /api/tailor/export/{format}?session_id=...`**
+   - Download the submission-ready clean PDF (`format=pdf`) or export the structured JSON (`format=json`).
+
 
 ## 📁 Project Structure
 

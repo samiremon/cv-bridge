@@ -18,12 +18,24 @@ from app.agents.state import (
 )
 from ..utils.guardrails import sanitize_and_inspect_text
 
-# Initialize Gemini Model
+# Initialize Gemini Model with resilient fallback
+api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or ""
+primary_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
 llm = ChatGoogleGenerativeAI(
-    model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
+    model=primary_model,
     temperature=0.2,
-    google_api_key=os.getenv("GEMINI_API_KEY", "")
+    google_api_key=api_key,
+    max_retries=2
 )
+
+if primary_model != "gemini-2.5-flash":
+    fallback_llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        temperature=0.2,
+        google_api_key=api_key
+    )
+    llm = llm.with_fallbacks([fallback_llm])
 
 
 # =====================================================================

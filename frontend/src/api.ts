@@ -107,3 +107,94 @@ export async function generateTailoredCV(
 
   return res.json();
 }
+
+// 4. Batch HR Candidate Screening & Ranking
+export interface CandidateScorecard {
+  id: number;
+  name: string;
+  email?: string;
+  score: number;
+  experience: string;
+  degree: string;
+  cgpa: string;
+  status: 'Matched' | 'Under Review' | 'Disqualified';
+  summary: string;
+  strengths: string[];
+}
+
+export interface HRScreeningResponse {
+  total_evaluated: number;
+  candidates: CandidateScorecard[];
+}
+
+export interface ScreenCandidatesParams {
+  resumes: File[];
+  jobDescription: string;
+  minExperienceYears?: string;
+  minCgpa?: string;
+  requiredDegree?: string;
+  customInstructions?: string;
+}
+
+export async function screenCandidates(
+  params: ScreenCandidatesParams
+): Promise<HRScreeningResponse> {
+  const formData = new FormData();
+  params.resumes.forEach((file) => {
+    formData.append('resumes', file);
+  });
+  formData.append('job_description', params.jobDescription);
+  if (params.minExperienceYears) {
+    formData.append('min_experience_years', params.minExperienceYears);
+  }
+  if (params.minCgpa) {
+    formData.append('min_cgpa', params.minCgpa);
+  }
+  if (params.requiredDegree) {
+    formData.append('required_degree', params.requiredDegree);
+  }
+  if (params.customInstructions) {
+    formData.append('custom_instructions', params.customInstructions);
+  }
+
+  const res = await fetch(`${API_BASE_URL}/api/hr/screen`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to screen candidates');
+  }
+
+  return res.json();
+}
+
+export interface SendCandidateEmailParams {
+  to: string;
+  subject: string;
+  body: string;
+}
+
+export interface SendCandidateEmailResponse {
+  success: boolean;
+  message: string;
+  recipient: string;
+}
+
+export async function sendCandidateEmail(
+  params: SendCandidateEmailParams
+): Promise<SendCandidateEmailResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/hr/send-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to dispatch email');
+  }
+
+  return res.json();
+}

@@ -1,3 +1,4 @@
+
 import uuid
 from io import BytesIO
 from typing import Optional, Dict, Any
@@ -9,6 +10,7 @@ from fastapi.responses import Response, JSONResponse
 from pydantic import BaseModel
 
 from langgraph.types import Command
+from ..utils.text_extractor import extract_text_and_bytes
 
 # Relative imports to avoid 'No module named app' path issues
 from ..agents.cv_tailor_graph import cv_tailor_graph
@@ -37,19 +39,7 @@ class GenerateCVRequest(BaseModel):
 # Helper Function: Extract Text from Uploaded Resume
 # =====================================================================
 
-async def extract_text_and_bytes(file: UploadFile):
-    content = await file.read()
-    filename = file.filename.lower()
-    
-    if filename.endswith(".pdf"):
-        with pdfplumber.open(BytesIO(content)) as pdf:
-            text = "\n".join([page.extract_text() or "" for page in pdf.pages])
-            return text, content, file.filename
-    elif filename.endswith(".docx"):
-        doc = Document(BytesIO(content))
-        return "\n".join([p.text for p in doc.paragraphs]), content, file.filename
-    else:
-        return content.decode("utf-8", errors="ignore"), content, file.filename
+
 
 # =====================================================================
 # Endpoints

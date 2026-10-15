@@ -1,0 +1,17 @@
+Job Title: Senior Backend & AI Systems Engineer
+Company: NextGen AI Solutions
+Location: Remote
+
+About the Role:
+We are looking for a Senior Backend Engineer to help build our next-generation AI agent orchestration platform. You will design resilient backend services, integrate LLM agents, and build high-throughput data caching systems.
+
+Required Qualifications:
+- 3+ years of experience with Python and FastAPI in production.
+- Experience with Docker and container orchestration using Kubernetes.
+- Strong database background in PostgreSQL and distributed caching using Redis.
+- Hands-on experience developing LLM pipelines or multi-agent workflows using LangGraph or LangChain.
+- Solid understanding of CI/CD, Git, and automated testing.
+
+Bonus Skills:
+- Experience with Celery or asynchronous message queues (RabbitMQ/Kafka).
+- Experience generating dynamic PDF documents or ATS compliance reports.

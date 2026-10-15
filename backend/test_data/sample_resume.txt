@@ -1,0 +1,31 @@
+Alex Mercer
+Email: alex.mercer@example.com | Phone: +1 (555) 012-3456 | Location: San Francisco, CA
+LinkedIn: linkedin.com/in/alexmercer | GitHub: github.com/alexmercer
+
+PROFESSIONAL SUMMARY
+Backend Software Engineer with 3+ years of experience building high-performance web applications and RESTful APIs using Python, FastAPI, and PostgreSQL. Experienced with containerized deployments using Docker and implementing secure authentication pipelines.
+
+TECHNICAL SKILLS
+- Languages: Python, JavaScript, SQL, HTML/CSS
+- Frameworks & Libraries: FastAPI, Flask, Pydantic, SQLAlchemy, PyTest
+- Databases & Storage: PostgreSQL, SQLite
+- DevOps & Tools: Docker, Git, GitHub Actions, Linux
+
+WORK EXPERIENCE
+Software Engineer | CloudScale Systems | Aug 2022 – Present
+- Built and maintained scalable RESTful microservices using FastAPI and PostgreSQL handling 2,000+ requests per second.
+- Reduced database query latency by 35% through indexing optimizations and connection pooling.
+- Designed automated CI/CD workflows using GitHub Actions for linting, testing, and Docker image builds.
+
+Junior Developer | DataSphere Labs | Jun 2021 – Jul 2022
+- Developed internal data reporting dashboard using Python and Flask.
+- Integrated third-party analytics APIs and normalized data ingestion pipelines.
+- Wrote unit and integration tests achieving 85% test coverage across core modules.
+
+PROJECTS
+TaskOrchestrator | Python, FastAPI, Docker
+- Built a lightweight distributed task scheduling engine with REST endpoints and asynchronous worker pools.
+- Packaged services into multi-stage Docker containers for local and staging deployments.
+
+EDUCATION
+B.S. in Computer Science | California State University | 2017 – 2021
