@@ -7,7 +7,7 @@ from fastapi.openapi.utils import get_openapi
 # Load environment variables
 load_dotenv()
 
-from app.routers import tailor, hr
+from app.routers import tailor, hr, interview
 from app.schemas.health import HealthResponse
 
 SWAGGER_DESCRIPTION = """
@@ -91,6 +91,7 @@ app.add_middleware(
 # Register API Routers
 app.include_router(tailor.router)
 app.include_router(hr.router)
+app.include_router(interview.router)
 
 
 def custom_openapi():

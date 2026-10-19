@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Interview Tester - Steps 1, 2 & 3</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 24px; max-width: 760px; margin: auto; }
+    h2 { color: #38bdf8; margin-top: 0; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+    .connected { background: #065f46; color: #34d399; }
+    .disconnected { background: #7f1d1d; color: #f87171; }
+    
+    .question-box { background: #1e293b; border: 1px solid #3b82f6; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .question-title { color: #60a5fa; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .question-text { font-size: 16px; color: #f1f5f9; line-height: 1.5; font-weight: 500; }
+    .concluded-banner { background: #065f46; color: #6ee7b7; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-top: 10px; display: none; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    button { background: #1e293b; color: #f8fafc; border: 1px solid #334155; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    button:hover { background: #334155; border-color: #475569; }
+    button.primary { background: #0284c7; border-color: #0284c7; color: white; }
+    button.primary:hover { background: #0369a1; }
+    button.mic { background: #059669; border-color: #059669; color: white; font-weight: 600; }
+    button.mic:hover { background: #047857; }
+    button.mic.active { background: #dc2626; border-color: #dc2626; }
+    button.danger { background: #dc2626; border-color: #dc2626; color: white; }
+    button.danger:hover { background: #b91c1c; }
+    
+    .reply-form { display: flex; gap: 8px; margin-bottom: 16px; }
+    .reply-input { flex: 1; background: #1e293b; border: 1px solid #334155; color: white; padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none; }
+    .reply-input:focus { border-color: #38bdf8; }
+
+    #log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.5; color: #94a3b8; }
+    .sent { color: #38bdf8; }
+    .received { color: #4ade80; }
+    .transcript { color: #fbbf24; font-weight: bold; background: #1e293b; padding: 4px 8px; border-radius: 4px; margin: 4px 0; }
+    .ai-speech { color: #60a5fa; font-weight: bold; background: #172554; padding: 4px 8px; border-radius: 4px; margin: 4px 0; }
+    .info { color: #94a3b8; }
+    .err { color: #f87171; }
+  </style>
+</head>
+<body>
+  <h2>🧪 Voice Interview Tester (Steps 1, 2 & 3: Duplex + Groq STT + Gemini Brain)</h2>
+  <div>Status: <span id="status" class="badge disconnected">Disconnected</span></div>
+
+  <!-- AI Interviewer Question Display Box -->
+  <div class="question-box">
+    <div class="question-header">
+      <span class="question-title">🤖 AI Interviewer</span>
+      <span id="questionCount" class="badge" style="background:#0f172a; color:#93c5fd; margin-bottom:0;">Question #0</span>
+    </div>
+    <div id="aiQuestionText" class="question-text">Click "1. Connect" then "2. Start Interview" to begin...</div>
+    <div id="concludedBanner" class="concluded-banner">🎉 Interview Completed! (Target question limit reached)</div>
+  </div>
+
+  <!-- Candidate Controls -->
+  <div class="controls">
+    <button id="btnConnect" class="primary" onclick="connect()">1. Connect</button>
+    <button onclick="sendInit()">2. Start Interview (Gemini Opening)</button>
+    <button id="btnRecord" class="mic" onclick="toggleRecording()">🎤 Speak Answer (Groq STT)</button>
+    <button onclick="sendInterrupt()">Send Interrupt</button>
+    <button id="btnDisconnect" class="danger" onclick="disconnect()">End Session</button>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
+
+  <!-- Typed Answer Form -->
+  <div class="reply-form">
+    <input id="txtAnswer" type="text" class="reply-input" placeholder="Or type your candidate answer here and click Send..." onkeydown="if(event.key==='Enter') sendTextAnswer()" />
+    <button class="primary" onclick="sendTextAnswer()">Send Typed Answer</button>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    let ws = null;
+    const sessionId = "session-" + Math.floor(Math.random() * 1000);
+    const logDiv = document.getElementById("log");
+    const statusSpan = document.getElementById("status");
+    const btnRecord = document.getElementById("btnRecord");
+    const aiQuestionText = document.getElementById("aiQuestionText");
+    const questionCount = document.getElementById("questionCount");
+    const concludedBanner = document.getElementById("concludedBanner");
+    const txtAnswer = document.getElementById("txtAnswer");
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentAudio = null;
+
+    function stopCurrentAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+        log("⏹️ Audio playback stopped.", "info");
+      }
+    }
+
+    function log(msg, type = "info") {
+      const time = new Date().toLocaleTimeString();
+      const line = document.createElement("div");
+      line.className = type;
+      line.innerText = `[${time}] ${msg}`;
+      logDiv.appendChild(line);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function clearLog() {
+      logDiv.innerHTML = "";
+    }
+
+    function connect() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        log("Already connected!", "info");
+        return;
+      }
+      const url = `ws://localhost:8000/api/interview/ws/${sessionId}`;
+      log(`Connecting to: ${url}...`, "info");
+      
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        statusSpan.innerText = "Connected";
+        statusSpan.className = "badge connected";
+        log("WebSocket Connected!", "info");
+      };
+
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === "ai_speech") {
+          aiQuestionText.innerText = data.text;
+          questionCount.innerText = `Question #${data.question_number || 1}`;
+          log(`🤖 GEMINI QUESTION: "${data.text}"`, "ai-speech");
+          if (data.is_concluded) {
+            concludedBanner.style.display = "block";
+          }
+
+          // Step 4: Play synthesized neural speech audio from server
+          if (data.audio_base64) {
+            stopCurrentAudio();
+            log("🔊 Playing neural voice audio...", "info");
+            currentAudio = new Audio("data:audio/mp3;base64," + data.audio_base64);
+            currentAudio.play().catch(err => {
+              log(`Audio playback hint: Click anywhere on the page to allow sound (${err.message})`, "err");
+            });
+            currentAudio.onended = () => {
+              log("Finished speaking. Ready for candidate answer.", "info");
+              currentAudio = null;
+            };
+          }
+        } else if (data.type === "transcription_ready") {
+          log(`🎙️ GROQ WHISPER HEARD: "${data.transcript}"`, "transcript");
+        } else {
+          log(`← RECV: ${e.data}`, "received");
+        }
+      };
+
+      ws.onerror = (e) => {
+        log("WebSocket Error encountered.", "err");
+      };
+
+      ws.onclose = () => {
+        statusSpan.innerText = "Disconnected";
+        statusSpan.className = "badge disconnected";
+        log("WebSocket Connection Closed.", "info");
+      };
+    }
+
+    function sendInit() {
+      if (!ensureOpen()) return;
+      const topic = prompt("Enter interview topic:", "React & Distributed Microservices") || "React & Distributed Microservices";
+      aiQuestionText.innerText = `Generating interview questions on '${topic}' using Gemini...`;
+      concludedBanner.style.display = "none";
+      const payload = { type: "init_session", topic: topic };
+      ws.send(JSON.stringify(payload));
+      log(`→ SENT: ${JSON.stringify(payload)}`, "sent");
+    }
+
+    function sendTextAnswer() {
+      if (!ensureOpen()) return;
+      const text = txtAnswer.value.trim();
+      if (!text) return;
+      
+      log(`👤 CANDIDATE (TYPED): "${text}"`, "sent");
+      ws.send(JSON.stringify({ type: "candidate_text", text: text }));
+      txtAnswer.value = "";
+      aiQuestionText.innerText = "Thinking & analyzing your answer with Gemini...";
+    }
+
+    async function toggleRecording() {
+      if (!ensureOpen()) return;
+
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            log(`Recording finished (${(audioBlob.size / 1024).toFixed(1)} KB). Sending to Groq STT...`, "info");
+            aiQuestionText.innerText = "Transcribing voice via Groq and analyzing with Gemini...";
+
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              const base64Audio = reader.result.split(",")[1];
+              const payload = {
+                type: "candidate_audio",
+                audio_base64: base64Audio,
+                filename: "recording.webm"
+              };
+              ws.send(JSON.stringify(payload));
+              log("→ SENT: candidate_audio to Groq", "sent");
+            };
+          };
+
+          stopCurrentAudio(); // Barge-in: Mute AI if candidate speaks
+          mediaRecorder.start();
+          isRecording = true;
+          btnRecord.innerText = "🛑 Stop & Submit Answer";
+          btnRecord.classList.add("active");
+          log("🎙️ Microphone active... Speak your technical explanation!", "info");
+        } catch (err) {
+          log(`Mic error: ${err.message}`, "err");
+        }
+      } else {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+          mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+        isRecording = false;
+        btnRecord.innerText = "🎤 Speak Answer (Groq STT)";
+        btnRecord.classList.remove("active");
+      }
+    }
+
+    function sendInterrupt() {
+      if (!ensureOpen()) return;
+      stopCurrentAudio(); // Immediately stop playing audio locally
+      const payload = { type: "interrupt" };
+      ws.send(JSON.stringify(payload));
+      log("→ SENT: interrupt (AI muted)", "sent");
+    }
+
+    function disconnect() {
+      if (!ensureOpen()) return;
+      stopCurrentAudio();
+      const payload = { type: "end_session" };
+      ws.send(JSON.stringify(payload));
+      log(`→ SENT: ${JSON.stringify(payload)}`, "sent");
+      setTimeout(() => { if (ws) ws.close(); }, 500);
+    }
+
+    function ensureOpen() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log("Please click '1. Connect' first!", "err");
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>

@@ -12,9 +12,7 @@ import {
   Loader2, 
   Check, 
   X, 
-  Eye, 
-  ArrowRight,
-  RotateCcw
+  Eye
 } from 'lucide-react';
 import { 
   analyzeResume, 
@@ -196,7 +194,6 @@ export const CvTailor: React.FC<CvTailorProps> = ({ onBackToOverview }) => {
   };
 
   const currentQ = questions[currentQuestionIndex];
-  const allAnswered = questions.length > 0 && questions.every(q => answers[q.id]);
   const answeredCount = Object.keys(answers).length;
 
   return (

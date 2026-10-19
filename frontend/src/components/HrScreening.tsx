@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Upload, 
   Award, 
@@ -85,57 +85,8 @@ export const HrScreening: React.FC<HrScreeningProps> = ({ onBackToOverview }) =>
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  // Candidates List (Sample fallback until user runs evaluation)
-  const [candidates, setCandidates] = useState<CandidateScorecard[]>([
-    {
-      id: 1,
-      name: "Samin Mahmud",
-      email: "samin@gmail.com",
-      score: 96,
-      experience: "3.5 yrs",
-      degree: "BSc in CSE",
-      cgpa: "3.82",
-      status: "Matched",
-      summary: "Strongest match. Exceeds experience requirement (3.5 yrs vs 2 yrs) with 3.82 CGPA, and has production microservices and Docker expertise.",
-      strengths: ["Docker & Microservices", "3.82 CGPA", "Clean Architecture"]
-    },
-    {
-      id: 2,
-      name: "Tanzim Hasan",
-      email: "tanzim@gmail.com",
-      score: 87,
-      experience: "2.5 yrs",
-      degree: "BSc in Computer Science",
-      cgpa: "3.65",
-      status: "Matched",
-      summary: "Meets all criteria with 2.5 yrs experience and 3.65 CGPA. Demonstrates solid React & Node proficiency.",
-      strengths: ["Exceeds min experience", "React & Node.js", "3.65 CGPA"]
-    },
-    {
-      id: 3,
-      name: "Rahim Chowdhury",
-      email: "rahim@gmail.com",
-      score: 74,
-      experience: "2.0 yrs",
-      degree: "BSc in CSE",
-      cgpa: "3.52",
-      status: "Under Review",
-      summary: "Meets exact thresholds (2.0 yrs, 3.52 CGPA). Strong core algorithms but limited cloud deployment experience.",
-      strengths: ["Meets minimum thresholds", "Core Algorithms"]
-    },
-    {
-      id: 4,
-      name: "Zubair Ahmed",
-      email: "zubair@gmail.com",
-      score: 41,
-      experience: "1.0 yr",
-      degree: "BSc in EEE",
-      cgpa: "3.10",
-      status: "Disqualified",
-      summary: "Does not meet hard thresholds: 1.0 yr experience (min 2 yrs needed) and 3.10 CGPA (cutoff 3.50).",
-      strengths: ["Basic Scripting"]
-    }
-  ]);
+  // Candidates List (Initially empty, populated after AI screening)
+  const [candidates, setCandidates] = useState<CandidateScorecard[]>([]);
 
   // Helper: Build Invitation Email Template
   const buildInvitationTemplate = (
@@ -587,12 +538,37 @@ ${DEFAULT_SIGN_OFF}`;
               <p className="text-xs text-slate-500 mt-0.5">Sorted by AI evaluation score</p>
             </div>
             <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
-              {totalEvaluated !== null ? `${totalEvaluated} Applicants Evaluated` : `${candidates.length} Applicants Displayed`}
+              {totalEvaluated !== null 
+                ? `${totalEvaluated} Applicants Evaluated` 
+                : candidates.length > 0 
+                  ? `${candidates.length} Applicants Displayed` 
+                  : 'Awaiting Evaluation'}
             </span>
           </div>
 
-          {/* Candidate Cards */}
-          <div className="space-y-3">
+          {/* Candidate Cards / State Handling */}
+          {isLoading ? (
+            <div className="py-20 text-center space-y-3">
+              <Loader2 className="w-8 h-8 text-purple-600 animate-spin mx-auto" />
+              <p className="text-sm font-semibold text-slate-800">Evaluating & Ranking Candidates...</p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Auditing resumes against job description and hard criteria thresholds...
+              </p>
+            </div>
+          ) : candidates.length === 0 ? (
+            <div className="py-20 border-2 border-dashed border-slate-200 rounded-2xl text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mx-auto">
+                <Award className="w-6 h-6 text-purple-500" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-800">No Candidate Rankings Yet</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Attach candidate resumes on the left, set your job description and filters, and click &ldquo;Rank Candidates&rdquo; to invoke the AI recruiter agent.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
             {candidates.map((c, idx) => {
               const sentStatus = sentEmails[c.id];
 
@@ -706,7 +682,8 @@ ${DEFAULT_SIGN_OFF}`;
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
