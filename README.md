@@ -1,6 +1,6 @@
 # CV Bridge 🌉
 
-> **Multi-Agent AI Career & Hiring Platform**  
+> **Multi-Agent AI Career & Hiring Platform Connecting Talent With Opportunities**  
 ## 📺 Project Demo Video
 
 Watch the complete walkthrough and live demonstration on YouTube:
