@@ -1,12 +1,6 @@
 # CV Bridge 🌉
 
 > **Multi-Agent AI Career & Hiring Platform**  
-> *Intelligent AI Agents Connecting Talent with Opportunity*
-
-[![YouTube Demo](https://img.shields.io/badge/YouTube-Watch%20Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/BfkqsXHdyUY?si=0gPZSObO-tHMXosJ)
-
----
-
 ## 📺 Project Demo Video
 
 Watch the complete walkthrough and live demonstration on YouTube:
