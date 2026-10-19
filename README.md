@@ -4,13 +4,6 @@
 > *Intelligent AI Agents Connecting Talent with Opportunity*
 
 [![YouTube Demo](https://img.shields.io/badge/YouTube-Watch%20Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/BfkqsXHdyUY?si=0gPZSObO-tHMXosJ)
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React 18](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Agentic%20State%20Machine-FF6F00?style=for-the-badge)](https://langchain-ai.github.io/langgraph/)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Flash%20%2F%20Pro-8E75C2?style=for-the-badge&logo=google)](https://aistudio.google.com/)
-[![Groq](https://img.shields.io/badge/Groq-Whisper%20v3-F55036?style=for-the-badge)](https://groq.com/)
-[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
 ---
 
